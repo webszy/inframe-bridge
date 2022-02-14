@@ -1,12 +1,7 @@
 const Inframe = class  {
-    constructor({target,whiteList}){
-        if(typeof target === 'string'){
-            this.targetIframe = document.querySelector(target);
-        } else if(typeof target!=='undefined'){
-            this.targetIframe = target
-        } else {
-            this.targetIframe = null
-        }
+    constructor({target,whiteList,libName}){
+        this.setTargetIframe(target)
+        this.setLibName(libName)
         if(typeof whiteList !== 'undefined' && !Array.isArray(whiteList)){
             console.warn('whiteList must be a Array')
             return false
@@ -16,6 +11,18 @@ const Inframe = class  {
         window.getInframeInstace = ()=>this
         window.addEventListener('message',this.handleEvent)
         return this
+    }
+    setTargetIframe(target){
+        if(typeof target === 'string'){
+            this.targetIframe = document.querySelector(target);
+        } else if(typeof target!=='undefined'){
+            this.targetIframe = target
+        } else {
+            this.targetIframe = null
+        }
+    }
+    setLibName(name){
+        this.libName=name || 'inframe'
     }
     on(eventName,handler){
         if(this.handlersMap.has(eventName)){
@@ -32,7 +39,13 @@ const Inframe = class  {
         }
     }
     emit(eventName,data){
-
+        if(this.targetIframe){
+            this.targetIframe.postMessage({
+                event:eventName,
+                params:data,
+                lib:'inframe'
+            })
+        }
     }
     handleEvent(e){
         // 验证data是由inframe发出的
@@ -47,11 +60,15 @@ const Inframe = class  {
                 return
             }
         }
-
+        const {data} = e
         console.log('handleEvent',e)
+        if(this.handlersMap.has(data.event)){
+            const handlers = this.handlersMap.get(data.event)
+            handlers.forEach(handler=>handler(data))
+        }
+
     }
     destroy(){
-        this.handlersMap = null
         this.handlersMap.clear()
         window.getInframeInstace = null
         window.removeEventListener('message',this.handleEvent)
