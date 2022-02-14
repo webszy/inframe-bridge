@@ -43,13 +43,13 @@ const Inframe = class  {
             this.targetIframe.postMessage({
                 event:eventName,
                 params:data,
-                lib:'inframe'
+                lib:this.libName
             })
         }
     }
     handleEvent(e){
         // 验证data是由inframe发出的
-        if(!e || typeof e.data!=='object' || !(e.data.lib&&e.data.lib === 'inframe')){
+        if(!e || typeof e.data!=='object' || !(e.data.lib&&e.data.lib === this.libName)){
             return
         }
         // 验证域名
