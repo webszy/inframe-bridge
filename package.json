@@ -1,0 +1,25 @@
+{
+  "name": "inframe",
+  "version": "1.0.0",
+  "description": "use pure Javascript to connect the iframe pages",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build --config build.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/webszy/iframe-bridge.git"
+  },
+  "keywords": [],
+  "author": "webszy",
+  "license": "LGPL",
+  "bugs": {
+    "url": "https://github.com/webszy/iframe-bridge/issues"
+  },
+  "homepage": "https://github.com/webszy/iframe-bridge#readme",
+  "devDependencies": {
+    "vite": "^2.8.1",
+    "vite-plugin-banner": "^0.2.0"
+  }
+}
