@@ -1,6 +1,6 @@
 {
   "name": "inframejs",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "use pure Javascript to connect the iframe pages",
   "main": "dist/inframejs.es.min.js",
   "scripts": {
