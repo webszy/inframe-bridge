@@ -63,7 +63,8 @@ const Inframe = class {
         const msg = {
             event: eventName,
             params: data,
-            lib: this.libName
+            lib: this.libName,
+            pageName:this.pageName
         }
         this.logger(`${eventName} has been emitted::${JSON.stringify(msg)}`)
         if (this.targetIframe) {
@@ -79,7 +80,11 @@ const Inframe = class {
 
     handleEvent(e) {
         // 验证data是由inframe发出的
-        if (!e || typeof e.data !== 'object' || !(e.data.lib && e.data.lib === this.libName)) {
+        if (!e ||
+            typeof e.data !== 'object' ||
+            !(e.data.lib && e.data.lib === this.libName) ||
+            this.pageName === e.data.pageName
+        ) {
             return
         }
         // 验证域名
