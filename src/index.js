@@ -1,3 +1,4 @@
+import {version} from '../package.json'
 const Inframe = class {
     constructor({target, whiteList, libName,debug,opener} = {}) {
         this.setTargetIframe(target)
@@ -9,6 +10,7 @@ const Inframe = class {
         this.whiteList = whiteList || []
         this.debug = !!debug
         this.opener = opener
+        this.version = version
         this.handlersMap = new Map()
         if (!window) {
             console.warn(`inframe bridge must init on the browser`)
