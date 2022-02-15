@@ -8,6 +8,10 @@ const Inframe = class  {
         }
         this.whiteList = whiteList
         this.handlersMap = new Map()
+        if(!window){
+            console.warn(`inframe bridge must init on the browser`)
+            return false
+        }
         window.getInframeInstace = ()=>this
         window.addEventListener('message',this.handleEvent)
         return this
@@ -15,10 +19,13 @@ const Inframe = class  {
     setTargetIframe(target){
         if(typeof target === 'string'){
             this.targetIframe = document.querySelector(target);
+            this.emit('connected','send by mainPage')
         } else if(typeof target!=='undefined'){
             this.targetIframe = target
+            this.emit('connected','send by mainPage')
         } else {
             this.targetIframe = null
+            this.emit('connected','send by iframe page')
         }
     }
     setLibName(name){
