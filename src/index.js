@@ -14,18 +14,23 @@ const Inframe = class  {
         }
         window.getInframeInstace = ()=>this
         window.addEventListener('message',this.handleEvent)
+        setTimeout(()=>{
+            if(this.targetIframe){
+                this.emit('connected','send by mainPage')
+            } else {
+                this.emit('connected','send by iframe page')
+            }
+        },1000)
         return this
     }
     setTargetIframe(target){
         if(typeof target === 'string'){
             this.targetIframe = document.querySelector(target);
-            this.emit('connected','send by mainPage')
         } else if(typeof target!=='undefined'){
             this.targetIframe = target
             this.emit('connected','send by mainPage')
         } else {
             this.targetIframe = null
-            this.emit('connected','send by iframe page')
         }
     }
     setLibName(name){
