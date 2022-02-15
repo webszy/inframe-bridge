@@ -1,8 +1,8 @@
 {
   "name": "inframejs",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "use pure Javascript to connect the iframe pages",
-  "main": "src/index.js",
+  "main": "dist/inframejs.es.min.js",
   "scripts": {
     "dev": "vite dev",
     "build": "vite build --config build.js"
@@ -11,7 +11,9 @@
     "type": "git",
     "url": "git+https://github.com/webszy/inframe-bridge.git"
   },
-  "keywords": [],
+  "keywords": [
+    "iframe"
+  ],
   "author": "webszy",
   "license": "LGPL",
   "bugs": {
