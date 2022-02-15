@@ -1,5 +1,5 @@
 const Inframe = class {
-    constructor({target, whiteList, libName,debug} = {}) {
+    constructor({target, whiteList, libName,debug,opener} = {}) {
         this.setTargetIframe(target)
         this.setLibName(libName)
         if (typeof whiteList !== 'undefined' && !Array.isArray(whiteList)) {
@@ -8,6 +8,7 @@ const Inframe = class {
         }
         this.whiteList = whiteList || []
         this.debug = !!debug
+        this.opener = opener
         this.handlersMap = new Map()
         if (!window) {
             console.warn(`inframe bridge must init on the browser`)
@@ -66,7 +67,11 @@ const Inframe = class {
         }
         this.logger(`${eventName} has been emitted::${JSON.stringify(msg)}`)
         if (this.targetIframe) {
-            this.targetIframe.contentWindow.postMessage(msg, '*')
+            if(this.opener){
+                this.targetIframe.opener.postMessage(msg, '*')
+            } else {
+                this.targetIframe.contentWindow.postMessage(msg, '*')
+            }
         } else {
             window.parent.postMessage(msg, '*')
         }
