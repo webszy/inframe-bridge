@@ -96,8 +96,8 @@ const Inframe = class {
             }
         }
         const {data} = e
-        this.logger(`received data: ${JSON.stringify(data)}`)
         if (this.handlersMap.has(data.event)) {
+            this.logger(`received data: ${JSON.stringify(data)}`)
             const handlers = this.handlersMap.get(data.event)
             handlers.forEach(handler => handler(data))
         } else{
