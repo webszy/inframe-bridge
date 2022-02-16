@@ -1,42 +1,60 @@
 import {version} from '../package.json'
+/*
+* @params
+* target:any window对象，或iframe,或class名，id名
+* whiteList:array 域名白名单
+* libName:string 通信时校验名
+* debug:boolean 是否打印日志
+* isSubPage:boolean 是否子页面
+* isNewWindow:boolean 是否是新窗口打开
+* */
+/*
+* 缓冲池
+* 子页面报告connected之后再发送事件，之前将所有发送的缓存
+* */
 const Inframe = class {
-    constructor({target, whiteList, libName,debug,opener} = {}) {
-        this.setTargetIframe(target)
+    constructor({target, whiteList, libName,debug,isSubPage,isNewWindow} = {}) {
+        this.setTarget(target)
         this.setLibName(libName)
         if (typeof whiteList !== 'undefined' && !Array.isArray(whiteList)) {
-            console.warn('whiteList must be a Array')
+            console.warn('whiteList must be a domain Array')
             return false
         }
-        this.whiteList = whiteList || []
+
+        this.isNewWindow = isNewWindow
+        this.whiteList = (whiteList || []).filter(e=>typeof e === 'string').map(e=>e.toLowerCase())
         this.debug = !!debug
-        this.opener = opener
+        this.isSubPage = typeof isSubPage === 'undefined'? true : isSubPage
+        this.isConneted = this.isSubPage
         this.version = version
         this.handlersMap = new Map()
+        this.emitCache = []
         if (!window) {
             console.warn(`inframe bridge must init on the browser`)
             return false
         }
         window.getInframeInstace = () => this
         window.addEventListener('message', this.handleEvent.bind(this))
-        if (this.targetIframe) {
-            this.on('connected', (e) => console.log(e))
-        } else {
-            console.log('sub instance',this)
+        if (this.isSubPage) {
             this.emit('connected','sub Page connected')
+            console.log('sub instance',this)
+        } else {
+            this.on('connected',()=>{
+                this.isConneted = true
+                this.emitCache.forEach(({eventName,data})=>this.emit(eventName,data))
+                this.emitCache = []
+            })
         }
         return this
     }
 
-    setTargetIframe(target) {
+    setTarget(target) {
         if (typeof target === 'string') {
-            this.targetIframe = document.querySelector(target);
-            this.pageName='main'
+            this.target = document.querySelector(target);
         } else if (typeof target !== 'undefined') {
-            this.targetIframe = target
-            this.pageName='main'
+            this.target = target
         } else {
-            this.targetIframe = null
-            this.pageName='sub'
+            this.target = null
         }
     }
 
@@ -66,17 +84,27 @@ const Inframe = class {
             event: eventName,
             params: data,
             lib: this.libName,
-            pageName:this.pageName
+            isSubPage:this.isSubPage
         }
-        this.logger(`${eventName} has been emitted::${JSON.stringify(msg)}`)
-        if (this.targetIframe) {
-            if(this.opener){
-                this.targetIframe.opener.postMessage(msg, '*')
+        this.logger(`${eventName} has been emit::${JSON.stringify(msg)}`)
+        if(this.isConneted){
+            if(this.isSubPage){
+                // 子页面
+                if(this.isNewWindow){
+                    window.opener.postMessage(msg,'*')
+                } else {
+                    window.parent.postMessage(msg,'*')
+                }
             } else {
-                this.targetIframe.contentWindow.postMessage(msg, '*')
+                // 主页面通过window.open打开了
+                if(this.isNewWindow){
+                    this.target.postMessage(msg,'*')
+                } else {
+                    this.target.contentWindow.postMessage(msg,'*')
+                }
             }
         } else {
-            window.parent.postMessage(msg, '*')
+            this.emitCache.push({eventName, data})
         }
     }
 
@@ -85,7 +113,7 @@ const Inframe = class {
         if (!e ||
             typeof e.data !== 'object' ||
             !(e.data.lib && e.data.lib === this.libName) ||
-            this.pageName === e.data.pageName
+            this.isSubPage === e.data.isSubPage
         ) {
             return
         }
@@ -119,7 +147,8 @@ const Inframe = class {
         }
         const d = new Date()
         const time = `${d.getHours()}:${d.getMinutes()}:${d.getSeconds()}`
-        console.log(`${time}-${this.pageName}::${message}`)
+        const pageName = this.isSubPage ? '子页面' : '主页面'
+        console.log(`${time}-${pageName}::${message}`)
     }
 }
 export default Inframe
