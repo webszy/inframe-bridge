@@ -50,12 +50,13 @@ const Inframe = class {
 
     setTarget(target) {
         if (typeof target === 'string') {
-            this.target = document.querySelector(target);
+            this.target = document.querySelector(target)
         } else if (typeof target !== 'undefined') {
             this.target = target
         } else {
             this.target = null
         }
+
     }
 
     setLibName(name) {
@@ -87,25 +88,31 @@ const Inframe = class {
             isSubPage:this.isSubPage
         }
         this.logger(`${eventName} has been emit::${JSON.stringify(msg)}`)
-        if(this.isConneted){
-            if(this.isSubPage){
-                // 子页面
-                if(this.isNewWindow){
-                    window.opener.postMessage(msg,'*')
+        try {
+            if(this.isConneted){
+                if(this.isSubPage){
+                    // 子页面
+                    if(this.isNewWindow){
+                        window.opener.postMessage(msg,'*')
+                    } else {
+                        window.parent.postMessage(msg,'*')
+                    }
                 } else {
-                    window.parent.postMessage(msg,'*')
+                    // 主页面通过window.open打开了
+                    if(this.isNewWindow){
+                        this.target.postMessage(msg,'*')
+                    } else {
+                        this.target.contentWindow.postMessage(msg,'*')
+                    }
                 }
             } else {
-                // 主页面通过window.open打开了
-                if(this.isNewWindow){
-                    this.target.postMessage(msg,'*')
-                } else {
-                    this.target.contentWindow.postMessage(msg,'*')
-                }
+                this.emitCache.push({eventName, data})
             }
-        } else {
-            this.emitCache.push({eventName, data})
+        } catch (e){
+            this.logger(e.message)
+            this.destroy()
         }
+
     }
 
     handleEvent(e) {
@@ -119,7 +126,7 @@ const Inframe = class {
         }
         // 验证域名
         if (this.whiteList.length) {
-            const checked = this.whiteList.some(domain => ~domain.indexOf(e.origin))
+            const checked = this.whiteList.some(domain => domain.indexOf(e.origin) > -1)
             if (!checked) {
                 console.warn('you are not access to inframe')
                 return
