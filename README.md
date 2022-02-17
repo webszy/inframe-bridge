@@ -1,6 +1,14 @@
 # inframeJS
 使用纯JS链接iframe或其他页面  
 use pure Javascript to connect the iframe pages
+## 基本使用
+> npm i inframejs
+```js
+const bridge = new Inframe({...})
+beidge.on('some event',()=>{})
+bridge.emit('some event')
+
+```
 ## 特点
 * 原生js,无依赖 es6
 * 一个事件可以有多个监听
