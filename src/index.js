@@ -88,29 +88,34 @@ const Inframe = class {
             isSubPage:this.isSubPage
         }
         this.logger(`${eventName} has been emit::${JSON.stringify(msg)}`)
+        const getTargetWindow = ()=>{
+            if(this.isSubPage){
+                // 子页面
+                if(this.isNewWindow){
+                    return window.opener
+                } else {
+                    return window.parent
+                }
+            } else {
+                // 主页面通过window.open打开了
+                if(this.isNewWindow){
+                    return this.target
+                } else {
+                    return this.target.contentWindow
+                }
+            }
+        }
         try {
             if(this.isConneted){
-                if(this.isSubPage){
-                    // 子页面
-                    if(this.isNewWindow){
-                        window.opener.postMessage(msg,'*')
-                    } else {
-                        window.parent.postMessage(msg,'*')
-                    }
-                } else {
-                    // 主页面通过window.open打开了
-                    if(this.isNewWindow){
-                        this.target.postMessage(msg,'*')
-                    } else {
-                        this.target.contentWindow.postMessage(msg,'*')
-                    }
-                }
+                const win = getTargetWindow()
+                win.postMessage(msg,'*')
             } else {
                 this.emitCache.push({eventName, data})
             }
         } catch (e){
             this.logger(e.message)
-            this.destroy()
+            const win = getTargetWindow()
+            win.postMessage(msg,'*')
         }
 
     }
